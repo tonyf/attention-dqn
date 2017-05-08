@@ -138,13 +138,15 @@ def optimize_model():
 #     env.render()
 
 num_episodes = 10
-for i_episode in range(num_episodes):
+for i_episode in range(EPOCHS * EPOCH_SIZE):
     # Initialize the environment and state
     frame = preprocess(env.reset())
     states = deque([frame] * 4)
 
     state = torch.stack(states, dim=0).unsqueeze(0)
     for t in range(MAX_TIME):
+        if RENDER: env.render()
+
         # Select and perform an action
         action = select_action(state)
         next_frame, reward, _, _ = env.step(action.numpy())
@@ -167,6 +169,10 @@ for i_episode in range(num_episodes):
             episode_durations.append(t + 1)
             plot_durations()
             break
+    
+    if i_episode % EPOCH_SIZE == 0:
+        # save model
+        torch.save(model.state_dict(), "models/simple_{0}".format(i_episode))
 
 env.close()
 plt.ioff()
