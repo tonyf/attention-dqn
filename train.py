@@ -35,7 +35,6 @@ last_sync = 0
 steps_done = 0
 
 USE_CUDA = torch.cuda.is_available()
-MAX_TIME = 100000
 
 if USE_CUDA:
     model.cuda()
@@ -63,7 +62,7 @@ def plot_durations():
     plt.figure(2)
     plt.clf()
     durations_t = torch.Tensor(episode_durations)
-    plt.title('Training...')
+    plt.title('Training')
     plt.xlabel('Episode')
     plt.ylabel('Duration')
     plt.plot(durations_t.numpy())
@@ -72,9 +71,6 @@ def plot_durations():
         means = durations_t.unfold(0, 100, 1).mean(1).view(-1)
         means = torch.cat((torch.zeros(99), means))
         plt.plot(means.numpy())
-    if is_ipython:
-        display.clear_output(wait=True)
-        display.display(plt.gcf())
 
 def get_screen():
     screen = torch.from_numpy(env.render()).float()
@@ -137,9 +133,11 @@ def optimize_model():
 #     env.step(np.random.randint(80, size=2))
 #     env.render()
 
+print "Start training"
 num_episodes = 10
 for i_episode in range(EPOCHS * EPOCH_SIZE):
     # Initialize the environment and state
+    final_reward = 0
     frame = preprocess(env.reset())
     states = deque([frame] * 4)
 
@@ -150,6 +148,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         # Select and perform an action
         action = select_action(state)
         next_frame, reward, _, _ = env.step(action.numpy())
+        final_reward = reward
         reward = torch.FloatTensor([reward])
 
         # Observe new state
@@ -170,10 +169,13 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
             plot_durations()
             break
     
+    print "Episode: {0} // Reward: {1}".format(i_episode, final_reward)
     if i_episode % EPOCH_SIZE == 0:
         # save model
         torch.save(model.state_dict(), "models/simple_{0}".format(i_episode))
+        plt.savefig("figures/simple_{0}".format(i_episode))
 
 env.close()
 plt.ioff()
-plt.show()
+if RENDER:
+    plt.show()
