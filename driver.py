@@ -26,7 +26,7 @@ from dqn import DQN
 from params import * 
 
 env = AttentionEnv()
-model = DQN()
+model = DQN(9)
 memory = ReplayMemory(10000)
 optimizer = optim.RMSprop(model.parameters())
 
@@ -55,11 +55,9 @@ def select_action(state):
         math.exp(-1. * steps_done / EPS_DECAY)
     steps_done += 1
     if sample > eps_threshold:
-        predicted_pos = model(Variable(state, volatile=True)).data.max.cpu()
-        return predicted_pos
+        return model(Variable(state, volatile=True)).data.max(1)[1].cpu()
     else:
-        rand_pos = np.random.randint(80, size=2).astype(float)
-        return torch.from_numpy(rand_pos)
+        return torch.LongTensor([[random.randrange(9)]])
 
 def plot_durations():
     plt.figure(2)
@@ -79,8 +77,12 @@ def plot_durations():
         display.display(plt.gcf())
 
 def get_screen():
-    screen = torch.from_numpy(env.render())
+    screen = torch.from_numpy(env.render()).float()
     return screen
+
+def preprocess(frame):
+    frame = frame / 255
+    return torch.from_numpy(frame).float()
 
 def optimize_model():
     global last_sync
@@ -90,22 +92,19 @@ def optimize_model():
     batch = Transition(*zip(*transitions))
 
     # Compute a mask of non-final states and concatenate the batch elements
-    non_final_mask = torch.ByteTensor(
-        tuple(map(lambda s: s is not None, batch.next_state)))
+    non_final_mask = torch.ByteTensor(tuple(map(lambda s: s is not None, batch.next_state)))
     if USE_CUDA:
         non_final_mask = non_final_mask.cuda()
-    # We don't want to backprop through the expected action values and volatile
-    # will save us on temporarily changing the model parameters'
-    # requires_grad to False!
     non_final_next_states = Variable(torch.cat([s for s in batch.next_state
-                                                if s is not None]),
-                                     volatile=True)
+                                                if s is not None]), volatile=True)
+
     state_batch = Variable(torch.cat(batch.state))
     action_batch = Variable(torch.cat(batch.action))
     reward_batch = Variable(torch.cat(batch.reward))
 
     # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
-    # columns of actions taken
+    # columns of actions take
+    # In this case, since 
     state_action_values = model(state_batch).gather(1, action_batch)
 
     # Compute V(s_{t+1}) for all next states.
@@ -141,20 +140,20 @@ def optimize_model():
 num_episodes = 10
 for i_episode in range(num_episodes):
     # Initialize the environment and state
-    env.reset()
-   
-    states = deque([get_screen()] * 4)
-    state = torch.stack(states, dim=0)
+    frame = preprocess(env.reset())
+    states = deque([frame] * 4)
+
+    state = torch.stack(states, dim=0).unsqueeze(0)
     for t in range(MAX_TIME):
         # Select and perform an action
-        action = select_action(state.unsqueeze(0))
-        _, reward, _, _ = env.step(action.numpy())
+        action = select_action(state)
+        next_frame, reward, _, _ = env.step(action.numpy())
         reward = torch.FloatTensor([reward])
 
         # Observe new state
         states.popleft()
-        states.append(get_screen())
-        next_state = torch.stack(states, dim=0)
+        states.append(preprocess(next_frame))
+        next_state = torch.stack(states, dim=0).unsqueeze(0)
 
         # Store the transition in memory
         memory.push(state, action, next_state, reward)
