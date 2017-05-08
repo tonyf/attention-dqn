@@ -20,7 +20,7 @@ import torch.autograd as autograd
 import torch.nn.functional as F
 import torchvision.transforms as T
 
-from gym_attention.envs import *
+from envs.attention_env import *
 from replay import Transition, ReplayMemory
 from dqn import DQN
 from hyperparams import * 
