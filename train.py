@@ -23,7 +23,7 @@ import torchvision.transforms as T
 from gym_attention.envs import *
 from replay import Transition, ReplayMemory
 from dqn import DQN
-from params import * 
+from hyperparams import * 
 
 env = AttentionEnv()
 model = DQN(9)
