@@ -25,10 +25,14 @@ from replay import Transition, ReplayMemory
 from dqn import DQN
 from hyperparams import * 
 
-env = AttentionEnv()
+env = AttentionEnv(complex=COMPLEX, sum_reward=SUM_REWARD)
 model = DQN(9)
 memory = ReplayMemory(10000)
 optimizer = optim.RMSprop(model.parameters())
+
+if len(sys.argv) == 3:
+    load_path = sys.argv[2]
+    model.load_state_dict(torch.load(load_path))
 
 episode_durations = []
 last_sync = 0
@@ -64,7 +68,7 @@ def plot_durations():
     durations_t = torch.Tensor(episode_durations)
     plt.title('Training')
     plt.xlabel('Episode')
-    plt.ylabel('Duration')
+    plt.ylabel('Total Reward')
     plt.plot(durations_t.numpy())
     # Take 100 episode averages and plot them too
     if len(durations_t) >= 100:
@@ -123,15 +127,6 @@ def optimize_model():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
-# env.reset()
-# plt.figure()
-# get_screen()
-# plt.title('Example extracted screen')
-# plt.show()
-#
-# while True:
-#     env.step(np.random.randint(80, size=2))
-#     env.render()
 
 print "Start training"
 num_episodes = 10
@@ -148,7 +143,6 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         # Select and perform an action
         action = select_action(state)
         next_frame, reward, _, _ = env.step(action.numpy())
-        final_reward = reward
         reward = torch.FloatTensor([reward])
 
         # Observe new state
@@ -165,14 +159,20 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         # Perform one step of the optimization (on the target network)
         optimize_model()
         if t == MAX_TIME-1:
-            episode_durations.append(t + 1)
+            episode_durations.append(reward[0])
             plot_durations()
             break
     
-    print "Episode: {0} // Reward: {1}".format(i_episode, final_reward)
-    if i_episode % EPOCH_SIZE == 0:
+    print "Episode: {0} // Reward: {1}".format(i_episode, reward[0])
+    if i_episode % EPOH_SIZE == 0:
         # save model
-        filename = "simple_" + str(i_episode)
+        filename = 'simple_'
+        if COMPLEX:
+            filename = "complex_"
+        if SUM:
+            filename= filename + "sum_"
+        filename = filename + str(i_episode)
+
         model_path = "models/" + filename
         figure_path = "figures/" + filename
         torch.save(model.state_dict(), model_path)
