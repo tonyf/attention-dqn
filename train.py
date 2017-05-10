@@ -24,6 +24,7 @@ from envs.attention_env import *
 from replay import Transition, ReplayMemory
 from dqn import DQN
 from hyperparams import * 
+from hinton import *
 
 env = AttentionEnv(complex=COMPLEX, sum_reward=SUM_REWARD)
 model = DQN(9)
@@ -63,7 +64,7 @@ def select_action(state):
         return torch.LongTensor([[random.randrange(9)]])
 
 def plot_durations():
-    plt.figure(2)
+    plt.figure(REWARD_GRAPH)
     plt.clf()
     durations_t = torch.Tensor(episode_durations)
     plt.title('Training')
@@ -127,6 +128,22 @@ def optimize_model():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
+def print_weights(model, epoch):
+    print "Saving weight diagrams"
+    conv1_weights = np.reshape(model.conv1.state_dict()['weight'].numpy(), (128, 64))
+    conv2_weights = np.reshape(model.conv2.state_dict()['weight'].numpy(), (2048, 16))
+    conv3_weights = np.reshape(model.conv3.state_dict()['weight'].numpy(), (4096, 9))
+    fc1_weights = model.fc1.state_dict()['weight'].numpy()
+    fc2_weights = model.fc2.state_dict()['weight'].numpy()
+    fc3_weights = model.fc3.state_dict()['weight'].numpy()
+
+    visualize_weights(conv1_weights, "Conv1", epoch)
+    visualize_weights(conv2_weights, "Conv2", epoch)
+    visualize_weights(conv3_weights, "Conv3", epoch)
+
+    visualize_weights(fc1_weights, "FC1", epoch)
+    visualize_weights(fc2_weights, "FC2", epoch)
+    visualize_weights(fc3_weights, "FC3", epoch)
 
 print "Start training"
 num_episodes = 10
@@ -137,7 +154,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
     states = deque([frame] * 4)
 
     state = torch.stack(states, dim=0).unsqueeze(0)
-    for t in range(MAX_TIME):
+    for t in range(MAX_TIME+1):
         if RENDER: env.render()
 
         # Select and perform an action
@@ -161,7 +178,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
 
         # Perform one step of the optimization (on the target network)
         optimize_model()
-        if done or t == MAX_TIME-1:
+        if done or t == MAX_TIME:
             print reward[0]
             episode_durations.append(reward[0])
             plot_durations()
@@ -181,6 +198,10 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         figure_path = "figures/" + filename
         torch.save(model.state_dict(), model_path)
         plt.savefig(figure_path)
+
+        if HINTON:
+            print_weights(model, i_episode)
+        
 
 env.close()
 plt.ioff()
