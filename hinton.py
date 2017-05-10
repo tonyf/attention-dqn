@@ -81,7 +81,7 @@ def hinton(W, names=None, maxweight=None, filename=None, title=None):
     if filename:
         F.savefig(filename, dpi=300)
     
-def visualize_weights(weights, layer, epoch):
-    filename = "figures/weights_{0}_epoch_{1}".format(layer, epoch)
+def visualize_weights(weights, layer, epoch, filename):
+    filepath = "figures/" + filename + "_weights_" + layer
     title = "Layer {0} - Episode {1}".format(layer, epoch)
-    hinton(weights, filename=filename, title=title)
+    hinton(weights, filename=filepath, title=title)
