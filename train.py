@@ -26,7 +26,7 @@ from dqn import DQN
 from hyperparams import * 
 from hinton import *
 
-env = AttentionEnv(complex=COMPLEX, sum_reward=SUM_REWARD)
+env = AttentionEnv(complex=COMPLEX, sum_reward=SUM_REWARD, static=False)
 model = DQN(9)
 memory = ReplayMemory(10000)
 optimizer = optim.RMSprop(model.parameters())
@@ -190,6 +190,8 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         filename = 'simple_'
         if COMPLEX:
             filename = "complex_"
+        if STATIC:
+            filename = "static_"
         if SUM_REWARD:
             filename= filename + "sum_"
         filename = filename + str(i_episode)

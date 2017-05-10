@@ -12,7 +12,7 @@ SIZE=84
 class AttentionEnv:
     metadata = {'render.modes': ['human', 'array']}
 
-    def __init__(self, complex=False, sum_reward=False):
+    def __init__(self, complex=False, sum_reward=False, static=False):
         if complex:
             self.board = AttentionBoard2(SIZE)
         else:
@@ -20,6 +20,9 @@ class AttentionEnv:
         self.display = None
         self.reward = 0.
         self._sum_reward = sum_reward
+
+        if static: self.mode = 'static'
+        else: self.mode=None
 
     def step(self, action):
         step_reward = self.board.step(action)
@@ -29,7 +32,7 @@ class AttentionEnv:
             self.reward += step_reward
         else:
             self.reward = step_reward
-        obs, done = self.board.next(mode='static')
+        obs, done = self.board.next(mode=self.mode)
         return (obs, self.reward, done, None)
 
     def reset(self):
