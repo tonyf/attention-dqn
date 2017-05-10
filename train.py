@@ -26,7 +26,7 @@ from dqn import DQN
 from hyperparams import * 
 from hinton import *
 
-env = AttentionEnv(complex=COMPLEX, sum_reward=SUM_REWARD, static=False)
+env = AttentionEnv(complex=COMPLEX, sum_reward=SUM_REWARD, static=STATIC)
 model = DQN(9)
 memory = ReplayMemory(10000)
 optimizer = optim.RMSprop(model.parameters())
