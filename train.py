@@ -164,7 +164,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
             break
     
     print "Episode: {0} // Reward: {1}".format(i_episode, reward[0])
-    if i_episode % EPOH_SIZE == 0:
+    if i_episode % EPOCH_SIZE == 0:
         # save model
         filename = 'simple_'
         if COMPLEX:
