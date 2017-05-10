@@ -1,6 +1,8 @@
 RENDER = True
 SUM_REWARD = False
 COMPLEX = False
+STATIC = True
+
 HINTON = False
 
 MAX_TIME = 10000
