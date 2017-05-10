@@ -6,6 +6,8 @@ DOT=225
 WALLS=127
 AGENT=85
 
+first = True
+
 MAX_MOVE=8
 MOVES = {   0: [ 0,  0],
             1: [-1,  0],
@@ -45,6 +47,7 @@ class AttentionBoard(object):
     """ Get reward for being attentive to a certain pixel """
     def reward(self, scale=1, mode='binary'):
         if np.array_equal(self.agent, self.dot):
+        # if self.does_overlap(self.agent, self.dot):
             return 1.0 * scale
         if mode == 'binary':
             return 0.0
@@ -65,6 +68,14 @@ class AttentionBoard(object):
 
     """ Helper Functions """
 
+    def does_overlap(self, agent, dot):
+        agent_set = set(self.circle_points(agent, self.radius))
+        dot_set = set(self.circle_points(dot, self.radius))
+        intersection = list(agent_set & dot_set)
+        if len(intersection) > 0:
+            return True
+        return False
+
     def calculate_pos(self, pos, v, a, t):
         pos = pos + (v * t) + (0.5 * a * t * t)
         return self.constrain_pos(pos)
@@ -84,7 +95,7 @@ class AttentionBoard(object):
             self.dot_v[1] = 0
         return pos
     
-    def write_circle(self, point, radius, color):
+    def circle_points(self, point, radius):
         x_center, y_center = point
 
         x_center = int(x_center)
@@ -102,6 +113,10 @@ class AttentionBoard(object):
                     circle_points.append((x,y_sym))
                     circle_points.append((x_sym,y))
                     circle_points.append((x_sym,y_sym))
+        return circle_points
+    
+    def write_circle(self, point, radius, color):
+        circle_points = self.circle_points(point, radius)
         
         for point in circle_points:
             x, y = point
