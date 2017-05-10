@@ -21,12 +21,13 @@ MOVES = {   0: [ 0,  0],
         }
 
 class AttentionBoard(object):
-    def __init__(self, size, radius=2, timestep=.25, speed=1):
+    def __init__(self, size, radius=2, timestep=.25, speed=1.5):
         self.board = np.zeros((size, size), dtype=float)
         self.size = size
         self.radius = radius
         self.timestep = timestep
         self.time = 0.0
+        self.speed = speed
 
         self.dot = np.array([size/2, size/2], dtype=float)
         self.dot_v = np.zeros((2))
@@ -39,15 +40,15 @@ class AttentionBoard(object):
         move = int(action[0])
         if move < 0 or move > MAX_MOVE:
             return -1.
-        self.agent = self.constrain_pos(self.agent + MOVES[move])
+        self.agent = self.constrain_pos(self.agent + self.speed*np.asarray(MOVES[move]))
         self.update_board()
         return self.reward(mode='distance')
         
 
     """ Get reward for being attentive to a certain pixel """
     def reward(self, scale=1, mode='binary'):
-        if np.array_equal(self.agent, self.dot):
-        # if self.does_overlap(self.agent, self.dot):
+        # if np.array_equal(self.agent, self.dot):
+        if self.does_overlap(self.agent, self.dot):
             return 1.0 * scale
         if mode == 'binary':
             return 0.0
@@ -60,10 +61,13 @@ class AttentionBoard(object):
         return self.board
 
     """ Update the board  """
-    def next(self, acceleration=None):
+    def next(self, acceleration=None, mode='random'):
+        if mode == 'static':
+            done = np.array_equal(self.agent, self.dot)
+            return (self.image(), done)
         if acceleration:
-            return self._next(acceleration)
-        return self._rand_next()
+            return (self._next(acceleration), False)
+        return (self._rand_next(), False)
 
 
     """ Helper Functions """

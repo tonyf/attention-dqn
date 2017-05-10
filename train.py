@@ -142,13 +142,16 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
 
         # Select and perform an action
         action = select_action(state)
-        next_frame, reward, _, _ = env.step(action.numpy())
+        next_frame, reward, done, _ = env.step(action.numpy())
         reward = torch.FloatTensor([reward])
 
         # Observe new state
         states.popleft()
         states.append(preprocess(next_frame))
         next_state = torch.stack(states, dim=0).unsqueeze(0)
+
+        if done:
+            next_state = None
 
         # Store the transition in memory
         memory.push(state, action, next_state, reward)
@@ -158,7 +161,8 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
 
         # Perform one step of the optimization (on the target network)
         optimize_model()
-        if t == MAX_TIME-1:
+        if done or t == MAX_TIME-1:
+            print reward[0]
             episode_durations.append(reward[0])
             plot_durations()
             break
