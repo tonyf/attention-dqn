@@ -128,7 +128,7 @@ def optimize_model():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
-def print_weights(model, epoch):
+def print_weights(model, epoch, filename):
     print "Saving weight diagrams"
     conv1_weights = np.reshape(model.conv1.state_dict()['weight'].numpy(), (128, 64))
     conv2_weights = np.reshape(model.conv2.state_dict()['weight'].numpy(), (2048, 16))
@@ -137,13 +137,13 @@ def print_weights(model, epoch):
     fc2_weights = model.fc2.state_dict()['weight'].numpy()
     fc3_weights = model.fc3.state_dict()['weight'].numpy()
 
-    visualize_weights(conv1_weights, "Conv1", epoch)
-    visualize_weights(conv2_weights, "Conv2", epoch)
-    visualize_weights(conv3_weights, "Conv3", epoch)
+    visualize_weights(conv1_weights, "Conv1", epoch, filename)
+    visualize_weights(conv2_weights, "Conv2", epoch, filename)
+    visualize_weights(conv3_weights, "Conv3", epoch, filename)
 
-    visualize_weights(fc1_weights, "FC1", epoch)
-    visualize_weights(fc2_weights, "FC2", epoch)
-    visualize_weights(fc3_weights, "FC3", epoch)
+    visualize_weights(fc1_weights, "FC1", epoch, filename)
+    visualize_weights(fc2_weights, "FC2", epoch, filename)
+    visualize_weights(fc3_weights, "FC3", epoch, filename)
 
 print "Start training"
 num_episodes = 10
@@ -202,7 +202,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         plt.savefig(figure_path)
 
         if HINTON:
-            print_weights(model, i_episode)
+            print_weights(model, i_episode, filename)
         
 
 env.close()

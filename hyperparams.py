@@ -3,7 +3,7 @@ SUM_REWARD = False
 COMPLEX = False
 STATIC = True
 
-HINTON = False
+HINTON = True
 
 MAX_TIME = 10000
 EPOCHS = 100
