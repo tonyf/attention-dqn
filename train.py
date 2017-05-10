@@ -172,8 +172,11 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
     print "Episode: {0} // Reward: {1}".format(i_episode, final_reward)
     if i_episode % EPOCH_SIZE == 0:
         # save model
-        torch.save(model.state_dict(), "models/simple_{0}".format(i_episode))
-        plt.savefig("figures/simple_{0}".format(i_episode))
+        filename = "simple_" + str(i_episode)
+        model_path = "models/" + filename
+        figure_path = "figures/" + filename
+        torch.save(model.state_dict(), model_path)
+        plt.savefig(figure_path)
 
 env.close()
 plt.ioff()
