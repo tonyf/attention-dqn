@@ -169,7 +169,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         filename = 'simple_'
         if COMPLEX:
             filename = "complex_"
-        if SUM:
+        if SUM_REWARD:
             filename= filename + "sum_"
         filename = filename + str(i_episode)
 
