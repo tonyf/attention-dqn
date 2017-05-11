@@ -7,7 +7,7 @@ import numpy as np
 import sys
 import math
 
-SIZE=20
+SIZE=24
 
 class AttentionEnv:
     metadata = {'render.modes': ['human', 'array']}

@@ -29,27 +29,27 @@ class AttentionBoard(object):
         self.time = 0.0
         self.speed = speed
 
-        self.dot = np.array([size/2, size/2], dtype=float)
         self.dot_v = np.zeros((2))
         self.dot_a = np.zeros((2))
-
+        self.dot = self.constrain_pos(np.random.randint(self.size, size=2))
+        
         self.agent = self.constrain_pos(np.random.randint(self.size, size=2))
         self.update_board()
 
     def step(self, action):
         move = int(action[0])
         if move < 0 or move > MAX_MOVE:
-            return -1.
+            return -1 * self.size * self.size
         self.agent = self.constrain_pos(self.agent + self.speed*np.asarray(MOVES[move]))
         self.update_board()
-        return self.reward()
+        return self.reward(mode='distance')
         
 
     """ Get reward for being attentive to a certain pixel """
     def reward(self, scale=1, mode='binary'):
         # if np.array_equal(self.agent, self.dot):
         if self.does_overlap(self.agent, self.dot):
-            return 0.
+            return 1.
         if mode == 'binary':
             return -1.
         if mode == 'distance':
