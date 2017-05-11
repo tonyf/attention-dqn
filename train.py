@@ -149,7 +149,6 @@ print "Start training"
 num_episodes = 10
 for i_episode in range(EPOCHS * EPOCH_SIZE):
     # Initialize the environment and state
-    final_reward = 0
     frame = preprocess(env.reset())
     states = deque([frame] * 4)
 

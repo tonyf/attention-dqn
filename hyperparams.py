@@ -1,5 +1,5 @@
 RENDER = True
-SUM_REWARD = False
+SUM_REWARD = True
 COMPLEX = False
 STATIC = True
 
