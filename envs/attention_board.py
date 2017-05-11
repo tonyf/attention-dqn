@@ -21,7 +21,7 @@ MOVES = {   0: [ 0,  0],
         }
 
 class AttentionBoard(object):
-    def __init__(self, size, radius=2, timestep=.25, speed=1):
+    def __init__(self, size, radius=1, timestep=.25, speed=1):
         self.board = np.zeros((size, size), dtype=float)
         self.size = size
         self.radius = radius

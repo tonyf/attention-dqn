@@ -149,7 +149,8 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
     states = deque([frame] * 4)
 
     state = torch.stack(states, dim=0).unsqueeze(0)
-    for t in range(1):
+    num_steps = 0
+    for t in range(MAX_TIME+1):
         if RENDER: env.render()
 
         # Select and perform an action
@@ -174,12 +175,12 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         # Perform one step of the optimization (on the target network)
         optimize_model()
         if done or t == MAX_TIME:
-            print reward[0]
+            num_steps=t
             episode_durations.append(reward[0])
             plot_durations()
             break
     
-    print "Episode: {0} // Reward: {1}".format(i_episode, reward[0])
+    print "Episode: {0} // Reward: {1} // Num Steps: {2}".format(i_episode, reward[0], )
     if i_episode % EPOCH_SIZE == 0:
         # save model
         filename = 'simple_'
