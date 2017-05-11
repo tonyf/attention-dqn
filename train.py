@@ -180,7 +180,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
             plot_durations()
             break
     
-    print "Episode: {0} // Reward: {1} // Num Steps: {2}".format(i_episode, reward[0], )
+    print "Episode: {0} // Reward: {1} // Num Steps: {2}".format(i_episode, reward[0], num_steps)
     if i_episode % EPOCH_SIZE == 0:
         # save model
         filename = 'simple_'
