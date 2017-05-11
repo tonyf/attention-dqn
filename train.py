@@ -132,18 +132,14 @@ def print_weights(model, epoch, filename):
     print "Saving weight diagrams"
     conv1_weights = np.reshape(model.conv1.state_dict()['weight'].numpy(), (128, 64))
     conv2_weights = np.reshape(model.conv2.state_dict()['weight'].numpy(), (2048, 16))
-    conv3_weights = np.reshape(model.conv3.state_dict()['weight'].numpy(), (4096, 9))
     fc1_weights = model.fc1.state_dict()['weight'].numpy()
     fc2_weights = model.fc2.state_dict()['weight'].numpy()
-    fc3_weights = model.fc3.state_dict()['weight'].numpy()
 
     visualize_weights(conv1_weights, "Conv1", epoch, filename)
     visualize_weights(conv2_weights, "Conv2", epoch, filename)
-    visualize_weights(conv3_weights, "Conv3", epoch, filename)
 
     visualize_weights(fc1_weights, "FC1", epoch, filename)
     visualize_weights(fc2_weights, "FC2", epoch, filename)
-    visualize_weights(fc3_weights, "FC3", epoch, filename)
 
 print "Start training"
 num_episodes = 10
@@ -153,7 +149,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
     states = deque([frame] * 4)
 
     state = torch.stack(states, dim=0).unsqueeze(0)
-    for t in range(MAX_TIME+1):
+    for t in range(1):
         if RENDER: env.render()
 
         # Select and perform an action
