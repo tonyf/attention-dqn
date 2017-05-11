@@ -42,16 +42,16 @@ class AttentionBoard(object):
             return -1.
         self.agent = self.constrain_pos(self.agent + self.speed*np.asarray(MOVES[move]))
         self.update_board()
-        return self.reward(mode='distance')
+        return self.reward()
         
 
     """ Get reward for being attentive to a certain pixel """
     def reward(self, scale=1, mode='binary'):
         # if np.array_equal(self.agent, self.dot):
         if self.does_overlap(self.agent, self.dot):
-            return 1.0 * scale
+            return 0.
         if mode == 'binary':
-            return 0.0
+            return -1.
         if mode == 'distance':
             return -1 * np.linalg.norm(self.dot - self.agent)
 

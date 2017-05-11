@@ -28,7 +28,7 @@ from hinton import *
 
 env = AttentionEnv(complex=COMPLEX, sum_reward=SUM_REWARD, static=STATIC)
 model = DQN(9)
-memory = ReplayMemory(10000)
+memory = ReplayMemory(1000)
 optimizer = optim.RMSprop(model.parameters())
 
 if len(sys.argv) == 3:
@@ -140,6 +140,7 @@ def print_weights(model, epoch, filename):
 
     visualize_weights(fc1_weights, "FC1", epoch, filename)
     visualize_weights(fc2_weights, "FC2", epoch, filename)
+    print "Exported diagrams"
 
 print "Start training"
 num_episodes = 10
