@@ -90,22 +90,27 @@ def optimize_model():
     if len(memory) < BATCH_SIZE:
         return
     transitions = memory.sample(BATCH_SIZE)
+    # Transpose the batch (see http://stackoverflow.com/a/19343/3343043 for
+    # detailed explanation).
     batch = Transition(*zip(*transitions))
 
     # Compute a mask of non-final states and concatenate the batch elements
-    non_final_mask = torch.ByteTensor(tuple(map(lambda s: s is not None, batch.next_state)))
+    non_final_mask = torch.ByteTensor(
+        tuple(map(lambda s: s is not None, batch.next_state)))
     if USE_CUDA:
         non_final_mask = non_final_mask.cuda()
+    # We don't want to backprop through the expected action values and volatile
+    # will save us on temporarily changing the model parameters'
+    # requires_grad to False!
     non_final_next_states = Variable(torch.cat([s for s in batch.next_state
-                                                if s is not None]), volatile=True)
-
+                                                if s is not None]),
+                                     volatile=True)
     state_batch = Variable(torch.cat(batch.state))
     action_batch = Variable(torch.cat(batch.action))
     reward_batch = Variable(torch.cat(batch.reward))
 
     # Compute Q(s_t, a) - the model computes Q(s_t), then we select the
-    # columns of actions take
-    # In this case, since 
+    # columns of actions taken
     state_action_values = model(state_batch).gather(1, action_batch)
 
     # Compute V(s_{t+1}) for all next states.
@@ -156,12 +161,9 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         if RENDER: env.render()
 
         # Select and perform an action
-        if t > learning_starts:
-            action = select_action(state)
-        else:
-            action = torch.LongTensor([[random.randrange(NUM_ACTIONS)]])
+        action = select_action(state)
 
-        next_frame, reward, done, _ = env.step(action.numpy()[0][0])
+        next_frame, reward, done, _ = env.step(action[0][0])
         total_reward += reward
         
         reward = torch.FloatTensor([reward])
