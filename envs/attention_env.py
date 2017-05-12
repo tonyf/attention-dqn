@@ -20,6 +20,7 @@ class AttentionEnv:
         self.display = None
         self.reward = 0.
         self._sum_reward = sum_reward
+        self.action_space=5
 
         if static: self.mode = 'static'
         else: self.mode=None
