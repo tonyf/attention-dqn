@@ -85,6 +85,7 @@ def plot_rewards(filename, rewards):
     plt.savefig(figure_path)
 
 def optimize_model():
+    global num_updates
     if not memory.can_sample(BATCH_SIZE):
         return
     state_batch, action_batch, reward_batch, next_state_batch, done_mask = memory.sample(BATCH_SIZE)
@@ -114,7 +115,7 @@ def optimize_model():
     next_state_values = next_state_values * not_done_mask
 
     # Compute the expected Q values
-    expected_state_action_values = (next_state_values * GAMMA) + reward_batch
+    expected_state_action_values = reward_batch + (next_state_values * GAMMA)
 
     # Compute Bellman error
     bellman_error = expected_state_action_values - state_action_values
