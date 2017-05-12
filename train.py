@@ -27,9 +27,9 @@ from hyperparams import *
 from hinton import *
 
 env = AttentionEnv(complex=COMPLEX, sum_reward=SUM_REWARD, static=STATIC)
-model = DQN(9)
-memory = ReplayMemory(10000)
-optimizer = optim.RMSprop(model.parameters())
+model = DQN(NUM_ACTIONS)
+memory = ReplayMemory(REPLAY_SIZE)
+optimizer = optim.SGD(model.parameters(), lr = 0.01, momentum=0.9)
 
 if len(sys.argv) == 3:
     load_path = sys.argv[2]
@@ -61,7 +61,7 @@ def select_action(state):
     if sample > eps_threshold:
         return model(Variable(state, volatile=True)).data.max(1)[1].cpu()
     else:
-        return torch.LongTensor([[random.randrange(9)]])
+        return torch.LongTensor([[random.randrange(NUM_ACTIONS)]])
 
 def plot_durations():
     plt.figure(REWARD_GRAPH)
@@ -143,7 +143,7 @@ def print_weights(model, epoch, filename):
     print "Exported diagrams"
 
 print "Start training"
-num_episodes = 10
+learning_starts = REPLAY_SIZE /2 
 for i_episode in range(EPOCHS * EPOCH_SIZE):
     # Initialize the environment and state
     frame = preprocess(env.reset())
@@ -155,8 +155,15 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         if RENDER: env.render()
 
         # Select and perform an action
-        action = select_action(state)
+        if t > learning_starts:
+            action = select_action(state)
+        else:
+            action = torch.LongTensor([[random.randrange(NUM_ACTIONS)]])
+
         next_frame, reward, done, _ = env.step(action.numpy())
+        total_reward = reward
+
+        reward = max(-1.0, min(reward, 1.0))
         reward = torch.FloatTensor([reward])
 
         # Observe new state
@@ -174,15 +181,17 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         state = next_state
 
         # Perform one step of the optimization (on the target network)
-        optimize_model()
+        if t > learning_starts:
+            optimize_model()
         if done or t == MAX_TIME:
             num_steps=t
-            episode_durations.append(reward[0])
+            episode_durations.append(total_reward[0])
             plot_durations()
             break
     
-    print "Episode: {0} // Reward: {1} // Num Steps: {2}".format(i_episode, reward[0], num_steps)
     if i_episode % EPOCH_SIZE == 0:
+        epoch = i_episode / EPOCH_SIZE
+        print "Epoch: {0} // Reward: {1} // Num Steps: {2}".format(epoch, reward[0], num_steps)
         # save model
         filename = 'simple_'
         if COMPLEX:
@@ -191,7 +200,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
             filename = "static_"
         if SUM_REWARD:
             filename= filename + "sum_"
-        filename = filename + str(i_episode)
+        filename = filename + str(epoch)
 
         model_path = "models/" + filename
         figure_path = "figures/" + filename
@@ -199,7 +208,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         plt.savefig(figure_path)
 
         if HINTON:
-            print_weights(model, i_episode, filename)
+            print_weights(model, epoch, filename)
         
 
 env.close()
