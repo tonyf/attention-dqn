@@ -40,13 +40,14 @@ if USE_CUDA:
     Q.cuda()
     V.cuda()
 
-if len(sys.argv) == 3:
-    load_path = sys.argv[2]
+if len(sys.argv) == 2:
+    print "Loading previous states"
+    load_path = sys.argv[1]
     Q.load_state_dict(torch.load(load_path))
     V.load_state_dict(torch.load(load_path))
 
 memory = ReplayMemory(REPLAY_SIZE, frame_history_len=4)
-optimizer = optim.RMSprop(Q.parameters(), lr=0.00025, alpha=0.95, eps=0.01)
+optimizer = optim.RMSprop(Q.parameters(), lr=LEARNING_RATE, alpha=0.95, eps=0.01)
 episode_rewards = []
 num_updates=0
 
@@ -112,7 +113,7 @@ def optimize_model():
     # next_state_values[non_final_mask] = V(non_final_next_states).detach().max(1)[0]
     # next_state_values.volatile = False
     next_state_values = V(next_state_batch).detach().max(1)[0]
-    next_state_values = next_state_values * not_done_mask
+    next_state_values = not_done_mask * next_state_values
 
     # Compute the expected Q values
     expected_state_action_values = reward_batch + (next_state_values * GAMMA)
@@ -148,7 +149,11 @@ def print_weights(model, epoch, filename):
 
 print "Start training"
 state = env.reset()
+
 episode_reward = 0
+mean_episode_reward = -float('nan')
+best_mean_episode_reward = -float('inf')
+
 num_steps = 0
 for t in count():
     if RENDER: env.render()
@@ -173,7 +178,7 @@ for t in count():
     state = next_state
 
     # Perform one step of the optimization (on the target network)
-    if t > START_TRAINING and t % EPOCH_SIZE == 0: 
+    if t > START_TRAINING and t % LEARNING_FREQ == 0: 
         optimize_model()
     if done:
         episode_rewards.append(episode_reward)
@@ -181,10 +186,14 @@ for t in count():
         num_steps=0
         next_state = env.reset()
     state = next_state
+
+    if len(episode_rewards) > 0:
+        mean_episode_reward = np.mean(episode_rewards[-100:])
+    best_mean_episode_reward = max(best_mean_episode_reward, mean_episode_reward)
     
-    if t % EPOCH_SIZE == 0:
-        epoch = t / EPOCH_SIZE
-        print "Epoch: {0} // Reward: {1} // Num Steps: {2}".format(epoch, episode_reward, num_steps)
+    if t > 1 and t % EPOCH_SIZE == 0:
+        epoch = t / EPOCH_SIZE - 1
+        print "Epoch: {0} // Avg Reward: {1} // Best Avg Reward: {2} // Num Steps: {3}".format(epoch, mean_episode_reward, best_mean_episode_reward, num_steps)
         # save model
         filename = 'simple_'
         if COMPLEX:
