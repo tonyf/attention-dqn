@@ -151,6 +151,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
 
     state = torch.stack(states, dim=0).unsqueeze(0)
     num_steps = 0
+    total_reward = 0
     for t in range(MAX_TIME+1):
         if RENDER: env.render()
 
@@ -161,9 +162,10 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
             action = torch.LongTensor([[random.randrange(NUM_ACTIONS)]])
 
         next_frame, reward, done, _ = env.step(action.numpy())
-        total_reward = reward
 
         reward = max(-1.0, min(reward, 1.0))
+        total_reward += reward
+        
         reward = torch.FloatTensor([reward])
 
         # Observe new state
@@ -191,7 +193,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
     
     if i_episode % EPOCH_SIZE == 0:
         epoch = i_episode / EPOCH_SIZE
-        print "Epoch: {0} // Reward: {1} // Num Steps: {2}".format(epoch, reward[0], num_steps)
+        print "Epoch: {0} // Reward: {1} // Num Steps: {2}".format(epoch, total_reward, num_steps)
         # save model
         filename = 'simple_'
         if COMPLEX:
