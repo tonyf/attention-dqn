@@ -51,7 +51,7 @@ class AttentionBoard(object):
         if self.does_overlap(self.agent, self.dot):
             return 1.
         if mode == 'binary':
-            return -1.
+            return 0
         if mode == 'distance':
             return -1 * np.linalg.norm(self.dot - self.agent)
 
