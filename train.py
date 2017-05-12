@@ -157,11 +157,11 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
 
         # Select and perform an action
         if t > learning_starts:
-            action = select_action(state)[0][0]
+            action = select_action(state)
         else:
-            action = random.randrange(NUM_ACTIONS)
+            action = torch.LongTensor([[random.randrange(NUM_ACTIONS)]])
 
-        next_frame, reward, done, _ = env.step(action)
+        next_frame, reward, done, _ = env.step(action.numpy()[0][0])
         total_reward += reward
         
         reward = torch.FloatTensor([reward])
@@ -181,8 +181,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         state = next_state
 
         # Perform one step of the optimization (on the target network)
-        if t > learning_starts:
-            optimize_model()
+        optimize_model()
         if done or t == MAX_TIME:
             num_steps=t
             episode_durations.append(total_reward)
