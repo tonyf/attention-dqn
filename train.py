@@ -143,7 +143,7 @@ def print_weights(model, epoch, filename):
     print "Exported diagrams"
 
 print "Start training"
-learning_starts = REPLAY_SIZE /2 
+learning_starts = REPLAY_SIZE / 200 
 for i_episode in range(EPOCHS * EPOCH_SIZE):
     # Initialize the environment and state
     frame = preprocess(env.reset())
@@ -157,13 +157,11 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
 
         # Select and perform an action
         if t > learning_starts:
-            action = select_action(state)
+            action = select_action(state)[0][0]
         else:
-            action = torch.LongTensor([[random.randrange(NUM_ACTIONS)]])
+            action = random.randrange(NUM_ACTIONS)
 
-        next_frame, reward, done, _ = env.step(action.numpy())
-
-        reward = max(-1.0, min(reward, 1.0))
+        next_frame, reward, done, _ = env.step(action)
         total_reward += reward
         
         reward = torch.FloatTensor([reward])
@@ -188,12 +186,13 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
         if done or t == MAX_TIME:
             num_steps=t
             episode_durations.append(total_reward)
+            total_reward += 0
             plot_durations()
             break
     
     if i_episode % EPOCH_SIZE == 0:
         epoch = i_episode / EPOCH_SIZE
-        print "Epoch: {0} // Reward: {1} // Num Steps: {2}".format(epoch, total_reward, num_steps)
+        print "Epoch: {0} // Avg Reward: {1} // Num Steps: {2}".format(epoch, np.mean(episode_durations), num_steps)
         # save model
         filename = 'simple_'
         if COMPLEX:

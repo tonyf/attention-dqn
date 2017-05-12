@@ -12,7 +12,7 @@ MAX_MOVE=8
 MOVES = {   0: [ 0,  0],
             1: [-1,  0],
             2: [ 1,  0],
-            3: [0,  -1],
+            3: [ 0, -1],
             4: [ 0,  1],
             5: [-1, -1],
             6: [ 1, -1],
@@ -37,12 +37,11 @@ class AttentionBoard(object):
         self.update_board()
 
     def step(self, action):
-        move = int(action[0])
-        if move < 0 or move > MAX_MOVE:
+        if action < 0 or action > MAX_MOVE:
             return -1 * self.size * self.size
-        self.agent = self.constrain_pos(self.agent + self.speed*np.asarray(MOVES[move]))
+        self.agent = self.constrain_pos(self.agent + self.speed*np.asarray(MOVES[action]))
         self.update_board()
-        return self.reward(mode='distance')
+        return self.reward(mode='binary')
         
 
     """ Get reward for being attentive to a certain pixel """
