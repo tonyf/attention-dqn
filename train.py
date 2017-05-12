@@ -185,7 +185,7 @@ for i_episode in range(EPOCHS * EPOCH_SIZE):
             optimize_model()
         if done or t == MAX_TIME:
             num_steps=t
-            episode_durations.append(total_reward[0])
+            episode_durations.append(total_reward)
             plot_durations()
             break
     
