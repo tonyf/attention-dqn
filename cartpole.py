@@ -65,6 +65,7 @@ from itertools import count
 from copy import deepcopy
 from PIL import Image
 import scipy.misc
+from dqn import *
 
 from collections import deque
 
@@ -108,25 +109,6 @@ class ReplayMemory(object):
         return len(self.memory)
 
 
-class DQN(nn.Module):
-
-    def __init__(self):
-        super(DQN, self).__init__()
-        self.conv1 = nn.Conv2d(4, 16, kernel_size=5, stride=2)
-        self.bn1 = nn.BatchNorm2d(16)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=5, stride=2)
-        self.bn2 = nn.BatchNorm2d(32)
-        self.conv3 = nn.Conv2d(32, 32, kernel_size=5, stride=2)
-        self.bn3 = nn.BatchNorm2d(32)
-        self.head = nn.Linear(20128, 2)
-
-    def forward(self, x):
-        x = F.relu(self.bn1(self.conv1(x)))
-        x = F.relu(self.bn2(self.conv2(x)))
-        x = F.relu(self.bn3(self.conv3(x)))
-        x = self.head(x.view(x.size(0), -1))
-        print x.size()
-        return x
 
 ######################################################################
 # Input extraction
@@ -214,7 +196,7 @@ EPS_END = 0.05
 EPS_DECAY = 200
 USE_CUDA = torch.cuda.is_available()
 
-model = DQN()
+model = DQN(2)
 memory = ReplayMemory(10000)
 optimizer = optim.RMSprop(model.parameters())
 

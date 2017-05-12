@@ -29,7 +29,7 @@ from hinton import *
 env = AttentionEnv(complex=COMPLEX, sum_reward=SUM_REWARD, static=STATIC)
 model = DQN(NUM_ACTIONS)
 memory = ReplayMemory(REPLAY_SIZE)
-optimizer = optim.SGD(model.parameters(), lr = 0.01, momentum=0.9)
+optimizer = optim.RMSprop(model.parameters())
 
 if len(sys.argv) == 3:
     load_path = sys.argv[2]
