@@ -156,7 +156,7 @@ best_mean_episode_reward = -float('inf')
 
 num_steps = 0
 for t in count():
-    if RENDER: env.render()
+    # if RENDER: env.render()
 
     state_idx = memory.store_frame(state)
     stacked_state = memory.encode_recent_observation()
@@ -168,7 +168,13 @@ for t in count():
         action = random.randrange(NUM_ACTIONS)
 
     next_state, reward, done, _ = env.step(action)
-    reward = max(-1.0, min(reward, 1.0))
+    if reward < 0:
+        reward = -1 - (1/reward)*10
+        if reward > 0:
+            reward = -1
+    if reward > 1:
+        reward = 1
+        
     episode_reward += reward
     num_steps += 1
 
