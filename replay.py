@@ -5,6 +5,17 @@ import numpy as np
 Transition = namedtuple('Transition',
                         ('state', 'action', 'next_state', 'reward'))
 
+def sample_n_unique(sampling_f, n):
+    """Helper function. Given a function `sampling_f` that returns
+    comparable objects, sample n such unique objects.
+    """
+    res = []
+    while len(res) < n:
+        candidate = sampling_f()
+        if candidate not in res:
+            res.append(candidate)
+    return res
+
 class ReplayMemory(object):
     def __init__(self, size, frame_history_len):
         self.size = size

@@ -85,7 +85,7 @@ def plot_rewards(filename, rewards):
     plt.savefig(figure_path)
 
 def optimize_model():
-    if len(memory) < BATCH_SIZE or not memory.can_sample(BATCH_SIZE):
+    if not memory.can_sample(BATCH_SIZE):
         return
     state_batch, action_batch, reward_batch, next_state_batch, done_mask = memory.sample(BATCH_SIZE)
 
