@@ -34,11 +34,11 @@ plt.figure()
 plt.show()
 
 
-BATCH_SIZE = 128
-GAMMA = 0.7
+BATCH_SIZE = 32
+GAMMA = 0.9
 EPS_START = 0.9
 EPS_END = 0.05
-EPS_DECAY = 200
+EPS_DECAY = 10000
 USE_CUDA = torch.cuda.is_available()
 
 model = DQNFF()
@@ -62,7 +62,7 @@ def select_action(state):
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * steps_done / EPS_DECAY)
-    print eps_threshold
+    # print eps_threshold
     steps_done += 1
     if sample > eps_threshold:
         return model(Variable(state, volatile=True)).data.max(1)[1].cpu()
@@ -136,17 +136,17 @@ for i_episode in range(num_episodes):
     # Initialize the environment and state
     last_frame = env.reset()
     current_frame = last_frame
-    state = torch.from_numpy(current_frame - last_frame).float().unsqueeze(0)
+    state = torch.from_numpy(current_frame).float().unsqueeze(0)
     duration = 0
     for t in count():
-        env.render()
+        # env.render()
         last_frame = current_frame
         action = select_action(state)
         current_frame, reward, done, _ = env.step(action.numpy()[0][0])
         reward = torch.Tensor([reward])
 
         # Observe new state
-        next_state = torch.from_numpy(current_frame - last_frame).float().unsqueeze(0)
+        next_state = torch.from_numpy(current_frame).float().unsqueeze(0)
         if done: next_state = None
 
         # Store the transition in memory
@@ -178,3 +178,4 @@ for i_episode in range(num_episodes):
 env.close()
 plt.ioff()
 plt.show()
+plt.savefig("figures/cartpole")
