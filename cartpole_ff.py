@@ -34,7 +34,7 @@ plt.figure()
 plt.show()
 
 
-BATCH_SIZE = 32
+BATCH_SIZE = 128
 GAMMA = 0.7
 EPS_START = 0.9
 EPS_END = 0.05
@@ -62,6 +62,7 @@ def select_action(state):
     sample = random.random()
     eps_threshold = EPS_END + (EPS_START - EPS_END) * \
         math.exp(-1. * steps_done / EPS_DECAY)
+    print eps_threshold
     steps_done += 1
     if sample > eps_threshold:
         return model(Variable(state, volatile=True)).data.max(1)[1].cpu()
@@ -130,7 +131,7 @@ def optimize_model():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
-num_episodes = 1000
+num_episodes = 3000
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     last_frame = env.reset()
@@ -161,11 +162,12 @@ for i_episode in range(num_episodes):
             episode_durations.append(duration)
             plot_durations()
             break
-    print "Episode: {0} // Duration: {1}".format(i_episode, duration)
     mean_duration = np.mean(episode_durations[-100:])
+    print "Episode: {0} // Duration: {1} // Mean Duration: {2}".format(i_episode, duration, mean_duration)
 
     if mean_duration >= 300:
         torch.save(model.state_dict(), "models/over_trained")
+        break
     elif mean_duration >= 195:
         torch.save(model.state_dict(), "models/fully_trained")
     elif mean_duration >= 98:
