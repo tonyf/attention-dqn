@@ -136,7 +136,7 @@ for i_episode in range(num_episodes):
     # Initialize the environment and state
     last_frame = env.reset()
     current_frame = last_frame
-    state = torch.from_numpy(current_frame).float().unsqueeze(0)
+    state = torch.from_numpy(current_frame - last_frame).float().unsqueeze(0)
     duration = 0
     for t in count():
         # env.render()
@@ -146,7 +146,7 @@ for i_episode in range(num_episodes):
         reward = torch.Tensor([reward])
 
         # Observe new state
-        next_state = torch.from_numpy(current_frame).float().unsqueeze(0)
+        next_state = torch.from_numpy(current_frame - last_frame).float().unsqueeze(0)
         if done: next_state = None
 
         # Store the transition in memory
