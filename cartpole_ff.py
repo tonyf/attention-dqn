@@ -43,7 +43,7 @@ USE_CUDA = torch.cuda.is_available()
 
 model = DQNFF()
 memory = ReplayMemory(10000)
-optimizer = optim.RMSprop(model.parameters())
+optimizer = optim.RMSprop(model.parameters(), lr=0.0033)
 
 if USE_CUDA:
     model.cuda()
