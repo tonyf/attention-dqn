@@ -46,7 +46,7 @@ USE_CUDA = torch.cuda.is_available()
 
 model = DQNFF()
 memory = ReplayMemory(10000)
-optimizer = optim.RMSprop(model.parameters(), lr=0.0033)
+optimizer = optim.RMSprop(model.parameters(), lr=0.005)
 
 if USE_CUDA:
     model.cuda()
@@ -150,6 +150,9 @@ def optimize_model():
     optimizer.step()
 
 num_episodes = 5000
+saved_half = False
+saved_full = False
+saved_overtrained = False
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     last_frame = env.reset()
@@ -189,20 +192,26 @@ for i_episode in range(num_episodes):
 
     if mean_duration >= 300:
         path += "over_trained"
-        filename = "models" + path
-        torch.save(model.state_dict(), filename)
-        print_weights(model, i_episode, path)
-        break
-    elif mean_duration >= 195:
-        path += "over_trained"
-        filename = "models" + path
-        torch.save(model.state_dict(), filename)
-        print_weights(model, i_episode, path)
-    elif mean_duration >= 98:
-        path += "over_trained"
         filename = "models/" + path
         torch.save(model.state_dict(), filename)
-        print_weights(model, i_episode, path)
+        if not saved_overtrained:
+            print_weights(model, i_episode, path)
+            saved_overtrained = True
+        break
+    elif mean_duration >= 195:
+        path += "fully_trained"
+        filename = "models/" + path
+        torch.save(model.state_dict(), filename)
+        if not saved_full:
+            print_weights(model, i_episode, path)
+            saved_full = True
+    elif mean_duration >= 98:
+        path += "half_trained"
+        filename = "models/" + path
+        torch.save(model.state_dict(), filename)
+        if not saved_half:
+            print_weights(model, i_episode, path)
+            saved_half = True
 
     duration = 0
 
