@@ -6,8 +6,6 @@ DOT=225
 WALLS=127
 AGENT=85
 
-first = True
-
 MAX_MOVE=8
 MOVES = {   0: [ 0,  0],
             1: [-1,  0],
