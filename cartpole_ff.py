@@ -13,6 +13,8 @@ import scipy.misc
 
 from dqn import *
 from replay import *
+from hinton import *
+from visualize import *
 
 from collections import deque
 
@@ -49,10 +51,12 @@ optimizer = optim.RMSprop(model.parameters())
 if USE_CUDA:
     model.cuda()
 
+COMPLEX=False
 if len(sys.argv) == 2:
     load_path = sys.argv[1]
     model.load_state_dict(torch.load(load_path))
     print "Loaded weights from {0}".format(load_path)
+    COMPLEX=True
 
 
 class Variable(autograd.Variable):
@@ -61,6 +65,14 @@ class Variable(autograd.Variable):
             data = data.cuda()
         super(Variable, self).__init__(data, *args, **kwargs)
 
+def print_weights(model, episode, filename):
+    print "Saving weight diagrams"
+    fc1_weights = model.fc1.state_dict()['weight'].numpy()
+    fc2_weights = model.head.state_dict()['weight'].numpy()
+
+    visualize_weights(fc1_weights, "FC1", episode, filename)
+    visualize_weights(fc2_weights, "FC2", episode, filename)
+    print "Exported diagrams"
 
 steps_done = 0
 def select_action(state):
@@ -137,7 +149,7 @@ def optimize_model():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
-num_episodes = 1
+num_episodes = 5000
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     last_frame = env.reset()
@@ -145,7 +157,7 @@ for i_episode in range(num_episodes):
     state = torch.from_numpy(current_frame - last_frame).float().unsqueeze(0)
     duration = 0
     for t in count():
-        env.render()
+        # env.render()
         last_frame = current_frame
         action = select_action(state)
         current_frame, reward, done, _ = env.step(action.numpy()[0][0])
@@ -171,13 +183,26 @@ for i_episode in range(num_episodes):
     mean_duration = np.mean(episode_durations[-100:])
     print "Episode: {0} // Duration: {1} // Mean Duration: {2}".format(i_episode, duration, mean_duration)
 
+    path = ""
+    if COMPLEX: 
+        path += "complex_"
+
     if mean_duration >= 300:
-        torch.save(model.state_dict(), "models/over_trained")
+        path += "over_trained"
+        filename = "models" + path
+        torch.save(model.state_dict(), filename)
+        print_weights(model, i_episode, path)
         break
     elif mean_duration >= 195:
-        torch.save(model.state_dict(), "models/fully_trained")
+        path += "over_trained"
+        filename = "models" + path
+        torch.save(model.state_dict(), filename)
+        print_weights(model, i_episode, path)
     elif mean_duration >= 98:
-        torch.save(model.state_dict(), "models/half_trained")
+        path += "over_trained"
+        filename = "models/" + path
+        torch.save(model.state_dict(), filename)
+        print_weights(model, i_episode, path)
 
     duration = 0
 

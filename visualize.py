@@ -36,10 +36,5 @@ def make_dot(var):
     add_nodes(var.creator)
     return dot
 
-model = DQN(9)
+model = DQNFF()
 
-inputs = torch.randn(1,4,84,84)
-y = model(Variable(inputs))
-
-g = make_dot(y)
-g.render('figures/graph', view=True)
