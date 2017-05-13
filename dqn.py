@@ -6,14 +6,14 @@ class DQNFF(nn.Module):
     def __init__(self):
         super(DQNFF, self).__init__()
         self.fc1 = nn.Linear(4, 30)
-        self.bn1 = nn.BatchNorm1d(30)
-        self.fc2 = nn.Linear(30, 20)
-        self.bn2 = nn.BatchNorm1d(20)
-        self.head = nn.Linear(20, 2)
+        self.fc2 = nn.Linear(30, 150)
+        self.fc3 = nn.Linear(150, 30)
+        self.head = nn.Linear(30, 2)
 
     def forward(self, x):
-        x = F.relu(self.bn1(self.fc1(x)))
-        x = F.relu(self.bn2(self.fc2(x)))
+        x = F.relu(self.fc1(x))
+        x = F.relu(self.fc2(x))
+        x = F.relu(self.fc3(x))
         return self.head(x.view(x.size(0), -1))
 
 ''' Cartpole Networks '''
