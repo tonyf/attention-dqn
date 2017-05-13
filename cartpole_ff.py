@@ -195,7 +195,7 @@ for i_episode in range(num_episodes):
         filename = "models/" + path
         torch.save(model.state_dict(), filename)
         if not saved_overtrained:
-            print_weights(model, i_episode, path)
+            # print_weights(model, i_episode, path)
             saved_overtrained = True
         break
     elif mean_duration >= 195:
@@ -203,14 +203,14 @@ for i_episode in range(num_episodes):
         filename = "models/" + path
         torch.save(model.state_dict(), filename)
         if not saved_full:
-            print_weights(model, i_episode, path)
+            # print_weights(model, i_episode, path)
             saved_full = True
     elif mean_duration >= 98:
         path += "half_trained"
         filename = "models/" + path
         torch.save(model.state_dict(), filename)
         if not saved_half:
-            print_weights(model, i_episode, path)
+            # print_weights(model, i_episode, path)
             saved_half = True
 
     duration = 0
