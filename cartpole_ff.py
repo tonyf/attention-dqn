@@ -1,3 +1,4 @@
+import sys
 import gym
 import math
 import random
@@ -47,6 +48,11 @@ optimizer = optim.RMSprop(model.parameters(), lr=0.0033)
 
 if USE_CUDA:
     model.cuda()
+
+if len(sys.argv) == 2:
+    load_path = sys.argv[1]
+    model.load_state_dict(torch.load(load_path))
+    print "Loaded weights from {0}".format(load_path)
 
 
 class Variable(autograd.Variable):
@@ -131,7 +137,7 @@ def optimize_model():
         param.grad.data.clamp_(-1, 1)
     optimizer.step()
 
-num_episodes = 3000
+num_episodes = 1
 for i_episode in range(num_episodes):
     # Initialize the environment and state
     last_frame = env.reset()
@@ -139,7 +145,7 @@ for i_episode in range(num_episodes):
     state = torch.from_numpy(current_frame - last_frame).float().unsqueeze(0)
     duration = 0
     for t in count():
-        # env.render()
+        env.render()
         last_frame = current_frame
         action = select_action(state)
         current_frame, reward, done, _ = env.step(action.numpy()[0][0])
@@ -175,7 +181,8 @@ for i_episode in range(num_episodes):
 
     duration = 0
 
+plt.savefig("figures/cartpole")
 env.close()
 plt.ioff()
-plt.show()
-plt.savefig("figures/cartpole")
+# plt.show()
+
